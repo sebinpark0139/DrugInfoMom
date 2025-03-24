@@ -9,19 +9,19 @@ from langchain_community.tools.tavily_search import TavilySearchResults
 from langgraph.graph import StateGraph, START, END
 from typing import TypedDict, Annotated
 
-# 상태 정의 (TypedDict 사용)
+
 class GraphState(TypedDict):
     user_query: str
     csv_result: Annotated[str, "csv_result"]
     search_result: Annotated[str, "search_result"]
     final_response: str
 
-# --- Node A: 사용자 입력 수집 노드 ---
+# Node A: 사용자 입력 수집 노드
 def node_a_function(state):
     user_query = state["user_query"]
     return {"user_query": user_query}
 
-# --- Node B: CSV 데이터 처리 ---
+# Node B: CSV 데이터 처리
 def node_b_function(state):
     query = state["user_query"]
     df = pd.read_csv('/Users/bagsebin/Desktop/DrugInfoMom/langgraph-example/임부금기 성분리스트.csv')
@@ -42,14 +42,14 @@ def node_b_function(state):
     result = agent_executor.invoke(prompt.strip())
     return {"csv_result": result}
 
-# --- Node C: 웹 검색 노드 ---
+# Node C: 웹 검색 노드
 def node_c_function(state):
     query = state["user_query"]
     tool = TavilySearchResults(max_results=2, tavily_api_key=os.getenv("TAVILY_API_KEY"))
     result = tool.invoke(query)
     return {"search_result": result}
 
-# --- Node D: 결과 통합 및 최종 응답 생성 노드 ---
+# Node D: 결과 통합 및 최종 응답 생성 노드
 def node_d_function(state):
     user_query = state["user_query"]
     csv_result = state["csv_result"]
@@ -67,7 +67,7 @@ def node_d_function(state):
     final_response = llm.invoke(messages)
     return {"final_response": final_response.content}
 
-# --- 상태 그래프 구성 ---
+# 상태 그래프 구성
 def build_graph():
     builder = StateGraph(GraphState)
 
